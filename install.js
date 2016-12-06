@@ -77,19 +77,27 @@ function downloadAndMoveTo( url, targetDir, cb ) {
 }
 
 clean( function(err){
-	if( err != null ) {
-		throw err;
-	}
-	downloadHaxe(function(err){
-		if( err != null ) {
-			throw err;
-		}
+        if( err != null ) {
+                throw err;
+        }
+        var nextFunc = null;
+        if(platform == 'darwin'){
+                nextFunc = function(){
+                        platform = os.platform();
+                        downloadHaxe(function(err){
+                                if( err != null ) {
+                                 throw err;
+                                }
+                        });
+                }
+                platform = 'linux';
+        }
+        downloadHaxe(function(err){
+                if( err != null ) {
+                        throw err;
+                }
 
-		fs.chmodSync(path.join( haxeDir, 'haxe' + (isWin ? '.exe' : '')) , '755');
-		downloadHaxelib( function(err) {
-			if( err != null ) {
-				throw err;
-			}
-		});
-	});
+                fs.chmodSync(path.join( haxeDir, 'haxe' + (isWin ? '.exe' : '')) , '755');
+                !nextFunc || nextFunc();
+        });
 } );
